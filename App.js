@@ -1,51 +1,58 @@
-import { createContext } from 'react';
+import React, { useState } from 'react';
+import { useEffect } from 'react';
+
 import './App.css';
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Route
-} from "react-router-dom";
-import Header from './components/Home/Header/Header';
-import Footer from './components/Shared/Footer/Footer';
-import Home from './components/Home/Home/Home';
-import SignInForm from './components/Login/LoginMain/SignInForm';
-import Dashboard from './components/Dashboard/Dashboard/Dashboard';
-import AppointMent from './components/AppointMent/AppointMent/AppointMent';
-import AllPatients from './components/AppointMent/AllPatients/AllPatients';
-import AddDoctor from './components/Dashboard/AddDoctor/AddDoctor';
-import DoctorList from './components/Dashboard/DoctorList/DoctorList';
-import AddReview from './components/Dashboard/My Review/AddReview';
-import PrivateRoute from './components/Login/PrivateRoute/PrivateRoute';
+import SearchIcon from './search.svg';
+import MovieCard from './MovieCard';
 
-// import PageNotFound from './components/Shared/PageNotFound/PageNotFound.jsx';
-// import PreLoad from './components/Shared/Preload/PreLoad';
+const API_URL = 'http://www.omdbapi.com?apikey=7b647de';
 
-// const Home = lazy(() => import('./components/Home/Home/Home'))
+const App = () => {
 
-export const UserContext = createContext();
+    const [movies, setMovies] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
-const router = createBrowserRouter([
-  { path: '/', element: <Home /> },
-  { path: '/login', element: <SignInForm /> },
-  { path: '/dashboard', element: <Dashboard /> },
-  { path: '/patients', element: <AllPatients /> },
-  { path: '/addDoctor', element: <AddDoctor /> },
-  { path: '/doctors', element: <DoctorList /> },
-  { path: '/auth/review', element: <AddReview /> },
-  {
-    path: '/appointment',
-    element: <PrivateRoute><AppointMent/></PrivateRoute>
-  },
-])
+    const searchMovies = async (title) => {
+        const response = await fetch(`${API_URL}&s=${title}`);
+        const data = await response.json();
+        setMovies(data.Search);
+    }
 
-function App() {
-  return (
-    <div>
-      <RouterProvider router={router} />
-    </div>
-    // <Suspense fallback={<PreLoad />}>
-    // <Route exact path="*">
-    // <PageNotFound />
-  );
-}
+    useEffect(() => {
+        searchMovies('Spiderman');
+    }, []);
+
+    return (
+        <div className='app'>
+            <h1>MoviesVerse</h1>
+
+            <div className='search'>
+                <input
+                    placeholder='Search for movies'
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)} />
+
+                <img
+                    src={SearchIcon}
+                    alt="search"
+                    onClick={() => searchMovies(searchTerm)} />
+            </div>
+
+            {
+                movies?.length > 0 ?
+                    (
+                        <div className='container'>
+                            {movies.map((movie) => (
+                                <MovieCard movie= {movie}/>
+                            ))}
+                        </div>
+                    ): (
+                        <div className='empty'>
+                            <h2>No movies found</h2>
+                        </div>
+                    )
+            }
+        </div>
+    );
+};
 export default App;
